@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper   
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+<mapper namespace="kr.spring.board.dao.BoardMapper">  
+	<select id="selectList" parameterType="map" resultType="boardVO">
+		SELECT
+		  *
+		FROM (SELECT 
+		        a.*,
+		        rownum rnum
+		      FROM (SELECT 
+		              b.board_num,
+		              <![CDATA[
+		              REPLACE(REPLACE(b.title,'<','&lt;'),'>','&gt;') title,
+		              ]]>
+		              b.filename,
+		              b.hit,
+		              b.reg_date,
+		              b.mem_num,
+		              m.id
+		            FROM spboard b JOIN spmember m ON b.mem_num = m.mem_num
+		            <where>
+		            	<if test="keyword != '' and keyfield == 1">
+		            		b.title LIKE '%' || #{keyword} || '%'
+		            	</if>
+		            	<if test="keyword != '' and keyfield == 2">
+		            		m.id LIKE '%' || #{keyword} || '%'
+		            	</if>
+		            	<if test="keyword != '' and keyfield == 3">
+		            		b.content LIKE '%' || #{keyword} || '%'
+		            	</if>
+		            	<if test="keyword != '' and keyfield == 4">
+		            		b.title LIKE '%' || #{keyword} || '%' or
+		            		b.content LIKE '%' || #{keyword} || '%'
+		            	</if>
+		            </where>
+		            ORDER BY b.board_num DESC)a)
+		<![CDATA[
+		WHERE rnum >= #{start} AND rnum <= #{end}  
+		]]>
+	</select>
+	
+	<select id="selectRowCount" parameterType="map" resultType="integer">
+		SELECT
+		  COUNT(*)
+		FROM spboard b JOIN spmember m ON b.mem_num = m.mem_num
+		<where>
+        	<if test="keyword != '' and keyfield == 1">
+        		b.title LIKE '%' || #{keyword} || '%'
+        	</if>
+        	<if test="keyword != '' and keyfield == 2">
+        		m.id LIKE '%' || #{keyword} || '%'
+        	</if>
+        	<if test="keyword != '' and keyfield == 3">
+        		b.content LIKE '%' || #{keyword} || '%'
+        	</if>
+        	<if test="keyword != '' and keyfield == 4">
+        		b.title LIKE '%' || #{keyword} || '%' or
+        		b.content LIKE '%' || #{keyword} || '%'
+        	</if>
+        </where>
+	</select>
+	
+	<update id="updateBoard" parameterType="boardVO">
+		UPDATE spboard SET
+			<if test="filename != ''">
+			uploadfile=#{uploadfile},
+			filename=#{filename},
+			</if>
+			title=#{title},
+			content=#{content},
+			ip=#{ip},
+			modify_date=SYSDATE
+		WHERE board_num=#{board_num}
+	</update>
+	
+	<!-- 댓글 목록 -->
+	<select id="selectListReply" parameterType="map" resultType="boardReplyVO">
+		SELECT
+		  *
+		FROM (SELECT 
+		        a.*,
+		        rownum rnum
+		      FROM (SELECT 
+		              b.re_num,
+		  			  b.re_content,
+		              TO_CHAR(b.re_date,'YYYY-MM-DD HH24:MI:SS') re_date,
+		              TO_CHAR(b.re_mdate,'YYYY-MM-DD HH24:MI:SS') re_mdate,
+		              b.board_num,
+		              b.mem_num,
+		              m.id
+		            FROM spboard_reply b JOIN spmember m ON b.mem_num=m.mem_num
+		            WHERE b.board_num = #{board_num}
+		            ORDER BY b.re_num DESC)a)
+		<![CDATA[
+		WHERE rnum >= #{start} AND rnum <= #{end}
+		]]>
+	</select>
+	
+	<!-- 댓글 총 갯수 -->
+	<select id="selectRowCountReply" parameterType="map" resultType="integer">
+		SELECT
+		   COUNT(*)
+		FROM spboard_reply b JOIN spmember m ON b.mem_num=m.mem_num
+		WHERE b.board_num = #{board_num}
+	</select>
+	
+</mapper>
+
+
+
+
+
+
+

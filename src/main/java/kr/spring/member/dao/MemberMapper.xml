@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper   
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+<mapper namespace="kr.spring.member.dao.MemberMapper">  
+	<update id="updateMember" parameterType="memberVO">
+		UPDATE spmember_detail
+		SET 
+		  name = #{name},
+		  phone = #{phone},
+		  email = #{email},
+		  zipcode = #{zipcode},
+		  address1 = #{address1},
+		  address2 = #{address2},
+		  modify_date = SYSDATE
+		WHERE mem_num = #{mem_num}		  	   
+	</update>
+</mapper>
+
+
+
+
+
+
+
